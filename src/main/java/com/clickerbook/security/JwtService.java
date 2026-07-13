@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -22,7 +23,7 @@ public class JwtService {
 
     public String generateToken(String email) {
         return Jwts.builder()
-                .subject("email")
+                .subject(email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
@@ -41,11 +42,11 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public boolean isTokenValid(String token, String email) {
+    public boolean isTokenValid(String token, UserDetails userDetails) {
 
-        String username = extractUsername(token);
+        final String username = extractUsername(token);
 
-        return username.equals(email)
+        return username.equals(userDetails.getUsername())
                 && !isTokenExpired(token);
 
     }
